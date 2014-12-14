@@ -41,6 +41,7 @@ public class EventBus {
     /** Log tag, apps may override it. */
     public static String TAG = "Event";
 
+    // 通过getDefault()方法可以获得的默认实例
     static volatile EventBus defaultInstance;
 
     private static final EventBusBuilder DEFAULT_BUILDER = new EventBusBuilder();
@@ -72,6 +73,7 @@ public class EventBus {
     private final boolean eventInheritance;
 
     /** Convenience singleton for apps using a process-wide EventBus instance. */
+    // 单例模式，尝试获取EventBus的实例，如果没有，则初始化一个，采用先检查，后同步，再检查的办法进行单例的初始化。
     public static EventBus getDefault() {
         if (defaultInstance == null) {
             synchronized (EventBus.class) {
@@ -83,6 +85,7 @@ public class EventBus {
         return defaultInstance;
     }
 
+    // EventBus构造者
     public static EventBusBuilder builder() {
         return new EventBusBuilder();
     }
@@ -96,12 +99,14 @@ public class EventBus {
     /**
      * Creates a new EventBus instance; each instance is a separate scope in which events are delivered. To use a
      * central bus, consider {@link #getDefault()}.
+     * 穿件默认的EventBus实例；每一个实例的events并不共享，events之后在其对应的EventBus中分发。为了使用统一的bus，应该考虑使用{@link #getDefault()}
      */
     public EventBus() {
         this(DEFAULT_BUILDER);
     }
 
     EventBus(EventBusBuilder builder) {
+        // 订阅者们，根据EventType分类：Key是订阅者的类，Value为对应的订阅者
         subscriptionsByEventType = new HashMap<Class<?>, CopyOnWriteArrayList<Subscription>>();
         typesBySubscriber = new HashMap<Object, List<Class<?>>>();
         stickyEvents = new ConcurrentHashMap<Class<?>, Object>();

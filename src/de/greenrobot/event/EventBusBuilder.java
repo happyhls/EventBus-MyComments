@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * 通过自定义参数来构造EventBus的实例，同时也允许创建一个自定义的默认的EventBus实例。
  * Creates EventBus instances with custom parameters and also allows to install a custom default EventBus instance.
  * Create a new builder using {@link EventBus#builder()}.
  */
@@ -40,24 +41,28 @@ public class EventBusBuilder {
     }
 
     /** Default: true */
+    /** 标记是否记录订阅者异常？ */
     public EventBusBuilder logSubscriberExceptions(boolean logSubscriberExceptions) {
         this.logSubscriberExceptions = logSubscriberExceptions;
         return this;
     }
 
     /** Default: true */
+    /** 标记是否就没有订阅者的信息 */
     public EventBusBuilder logNoSubscriberMessages(boolean logNoSubscriberMessages) {
         this.logNoSubscriberMessages = logNoSubscriberMessages;
         return this;
     }
 
     /** Default: true */
+    /** 标记是否发送订阅者异常的Event */
     public EventBusBuilder sendSubscriberExceptionEvent(boolean sendSubscriberExceptionEvent) {
         this.sendSubscriberExceptionEvent = sendSubscriberExceptionEvent;
         return this;
     }
 
     /** Default: true */
+    /** 标记是否发送无订阅者的Event */
     public EventBusBuilder sendNoSubscriberEvent(boolean sendNoSubscriberEvent) {
         this.sendNoSubscriberEvent = sendNoSubscriberEvent;
         return this;
@@ -65,6 +70,7 @@ public class EventBusBuilder {
 
     /**
      * Fails if an subscriber throws an exception (default: false).
+     * 设置当订阅者发生异常的时候，是否进入失败流程(默认为false)
      * <p/>
      * Tip: Use this with BuildConfig.DEBUG to let the app crash in DEBUG mode (only). This way, you won't miss
      * exceptions during development.
@@ -79,9 +85,13 @@ public class EventBusBuilder {
      * Switching this feature off will improve posting of events. For simple event classes extending Object directly,
      * we measured a speed up of 20% for event posting. For more complex event hierarchies, the speed up should be
      * >20%.
+     * 默认情况下，EventBus会考虑event时间的类的层次关系(即订阅了对应的父类的订阅者也会收到消息)、
+     * 通过将该属性关闭可以提高发送event的效率。比如一个简单的继承了Object的类，我们观察到对于event的发送有20%的性能提升。
+     * 对于更加复杂的类的继承，提升的速度会超过20%。
      * <p/>
      * However, keep in mind that event posting usually consumes just a small proportion of CPU time inside an app,
      * unless it is posting at high rates, e.g. hundreds/thousands of events per second.
+     * 然后，需要记住的是，在app的内部，event的发送仅仅会消耗很少的CPU时间，除非当发送的频率非常高，比如达到每秒几百次甚至几千次的时候。
      */
     public EventBusBuilder eventInheritance(boolean eventInheritance) {
         this.eventInheritance = eventInheritance;
@@ -92,6 +102,7 @@ public class EventBusBuilder {
     /**
      * Provide a custom thread pool to EventBus used for async and background event delivery. This is an advanced
      * setting to that can break things: ensure the given ExecutorService won't get stuck to avoid undefined behavior.
+     * 提供一个自己定义的线程池供Event用于发送async或者background(异步或者后台)程序。
      */
     public EventBusBuilder executorService(ExecutorService executorService) {
         this.executorService = executorService;
@@ -102,6 +113,8 @@ public class EventBusBuilder {
      * Method name verification is done for methods starting with onEvent to avoid typos; using this method you can
      * exclude subscriber classes from this check. Also disables checks for method modifiers (public, not static nor
      * abstract).
+     * 为方法名前缀为onEvent的方法检查其方法名称来避免错别字；使用该方法，我们可以使得订阅者类不需要做这项工作。如果设置之后，也会关闭检查
+     * 修饰符(public,not static 或者是abstract)。
      */
     public EventBusBuilder skipMethodVerificationFor(Class<?> clazz) {
         if (skipMethodVerificationForClasses == null) {
@@ -114,8 +127,10 @@ public class EventBusBuilder {
     /**
      * Installs the default EventBus returned by {@link EventBus#getDefault()} using this builders' values. Must be
      * done only once before the first usage of the default EventBus.
+     * 使用EventBus builder的默认配置来初始化EventBus的默认参数，必须要在EventBus第一次使用之前进行调用。
      *
      * @throws EventBusException if there's already a default EventBus instance in place
+     * @throws 如果已经有一个EventBus的实例存在，会抛出EventBusException异常
      */
     public EventBus installDefaultEventBus() {
         synchronized (EventBus.class) {
